@@ -1,5 +1,11 @@
+#js-board {
+    height: 100%;
+}
+
 .c-board {
+    box-sizing: border-box;
     display: flex;
-    height: 800px;
+    // height: 800px;
+    height: 100%;
     padding: 20px;
 }

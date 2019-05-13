@@ -4,12 +4,13 @@ import Axios from 'axios';
 import Column from './Column/Column';
 import ColumnCreate from './ColumnCreate/ColumnCreate';
 import CardModal from './Column/CardModal/CardModal';
+import Toast from './Toast/Toast';
 
 class Board extends Component {
     constructor(props) {
         super(props)
 
-        this.state = { columns: [] }
+        this.state = { columns: [], message: '' }
     }
 
     componentDidMount() {
@@ -30,10 +31,31 @@ class Board extends Component {
         Axios.post('/board/' + this.props.board.id + '/column', { title })
         .then(response => {
             this.setState({
-                columns: [...this.state.columns, JSON.parse(response.data)]
+                columns: [...this.state.columns, JSON.parse(response.data)],
+                message: 'Column created'
             })
         })
         .catch(error => {
+            this.setState({ message: error.message })
+            console.log(error)
+        })
+    }
+
+    updateColumn = (columnId, type, value) => {
+        const columns = this.state.columns.map(column => {
+            if (column.id === columnId) {
+                column[type] = value
+            }
+
+            return column
+        })
+
+        this.setState({ columns })
+        Axios.put('/board/' + this.props.board.id + '/column/' + columnId, { title: value })
+        .then(response => {
+        })
+        .catch(error => {
+            this.setState({ message: error.message })
             console.log(error)
         })
     }
@@ -49,9 +71,10 @@ class Board extends Component {
                 return column
             })
 
-            this.setState({ columns })
+            this.setState({ columns, message: 'Card created' })
         })
         .catch(error => {
+            this.setState({ message: error.message })
             console.log(error)
         })
     }
@@ -76,6 +99,14 @@ class Board extends Component {
         })
 
         this.setState({ columns })
+
+        Axios.put('/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id, this.state.cardSelected)
+        .then(response => {
+        })
+        .catch(error => {
+            this.setState({ message: error.message })
+            console.log(error)
+        })
     }
 
     removeColumn = (columnId) => {
@@ -83,9 +114,10 @@ class Board extends Component {
         .then(response => {
             const columns = this.state.columns.filter(column => column.id !== columnId)
 
-            this.setState({ columns })
+            this.setState({ columns, message: 'Column removed' })
         })
         .catch(error => {
+            this.setState({ message: error.message })
             console.log(error)
         })
     }
@@ -107,11 +139,12 @@ class Board extends Component {
                 return column
             })
 
-            this.setState({ columns })
+            this.setState({ columns, message: 'Card removed' })
 
             this.unselectCard()
         })
         .catch(error => {
+            this.setState({ message: error.message })
             console.log(error)
         })
     }
@@ -142,7 +175,7 @@ class Board extends Component {
     render() {
         const columns = this.state.columns ? (
             this.state.columns.map(column => {
-                return <Column key={column.id} {...column} onAddCard={(title) => this.addCard(column.id, title)} selectCard={(cardId) => this.selectCard(column.id, cardId)} />
+                return <Column key={column.id} {...column} onAddCard={(title) => this.addCard(column.id, title)} updateColumn={(type, value) => this.updateColumn(column.id, type, value)} removeColumn={() => this.removeColumn(column.id)} selectCard={(cardId) => this.selectCard(column.id, cardId)} />
             })
         ) : null
 
@@ -151,6 +184,7 @@ class Board extends Component {
                 {columns}
                 <ColumnCreate onAddColumn={this.addColumn} />
                 <CardModal cardSelected={this.state.cardSelected} updateCard={this.updateCard} removeCard={this.removeCard} unselectCard={this.unselectCard} />
+                <Toast message={this.state.message} />
             </div>
         )
     }

@@ -8,7 +8,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 class CardListController extends AbstractController
 {
@@ -29,7 +31,7 @@ class CardListController extends AbstractController
     /**
      * @Route("/board/{id}/column", name="column_new", methods={"POST"})
      */
-    public function new(Board $board, Request $request, SerializerInterface $serializer): JsonResponse
+    public function new(Board $board, Request $request, ValidatorInterface $validator, SerializerInterface $serializer): JsonResponse
     {
         $parametersAsArray = [];
         if ($content = $request->getContent()) {
@@ -40,6 +42,11 @@ class CardListController extends AbstractController
         $cardList->setTitle($parametersAsArray['title']);
         $cardList->setBoard($board);
 
+        $errors = $validator->validate($cardList);
+        if (count($errors) > 0) {
+            return new JsonResponse((string)$errors, 422);
+        }
+
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($cardList);
         $entityManager->flush();
@@ -47,7 +54,32 @@ class CardListController extends AbstractController
         $dataJson = $serializer->serialize($cardList, 'json', ['groups' => ['column']]);
         // $dataJson = $serializer->serialize($cardList, 'json', ['attributes' => ['id', 'title', 'description']]);
 
-        return new JsonResponse($dataJson);
+        return new JsonResponse($dataJson, 201);
+    }
+
+    /**
+     * @Route("/board/{board_id}/column/{column_id}", name="column_edit", methods={"PUT"})
+     * 
+     * @ParamConverter("board", options={"mapping": {"board_id": "id"}})
+     * @ParamConverter("cardList", options={"mapping": {"column_id": "id"}})
+     */
+    public function edit(Board $board, CardList $cardList, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $parametersAsArray = [];
+        if ($content = $request->getContent()) {
+            $parametersAsArray = json_decode($content, true);
+        }
+
+        $cardList->setTitle($parametersAsArray['title']);
+
+        $errors = $validator->validate($cardList);
+        if (count($errors) > 0) {
+            return new JsonResponse((string) $errors, 422);
+        }
+
+        $this->getDoctrine()->getManager()->flush();
+
+        return new JsonResponse(null, 204);
     }
 
     /**
@@ -59,6 +91,6 @@ class CardListController extends AbstractController
         $entityManager->remove($cardList);
         $entityManager->flush();
 
-        return new JsonResponse();
+        return new JsonResponse(null, 204);
     }
 }

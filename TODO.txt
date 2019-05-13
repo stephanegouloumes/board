@@ -1,0 +1,5 @@
+# TODO
+
+- Use lodash when updating values
+- Token
+- Guard

@@ -7,6 +7,7 @@
     font-size: 18px;
     letter-spacing: 1px;
     color: #FFF;
+    border: none;
     border-radius: 2px;
     border-bottom: 3px $gray-dark solid;
     background-color: $gray;
@@ -43,7 +44,7 @@
         }
     }
 
-    &.o-button--red {
+    &.o-button--danger {
         border-bottom-color: $red-dark;
         background-color: $red;
 

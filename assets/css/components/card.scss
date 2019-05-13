@@ -3,6 +3,7 @@
     background-color: #FFF;
     border-radius: 2px;
     cursor: pointer;
+    transition: 0.25s background-color;
 
     &:hover {
         background-color: darken(#FFF, 3%);
