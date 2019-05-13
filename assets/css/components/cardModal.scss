@@ -1,0 +1,27 @@
+.c-card-modal {
+}
+
+.c-card-modal__header {
+    margin-bottom: 20px;
+
+    & input {
+        font-size: 26px;
+        border: none;
+    }
+}
+
+.c-card-modal__content {
+    & .c-card-modal__group {
+        margin-bottom: 30px;
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            padding: 5px;
+            width: 300px;
+        }
+    }
+}

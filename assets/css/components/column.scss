@@ -1,0 +1,27 @@
+.c-columns {
+    display: flex;
+}
+
+.c-column {
+    width: 260px;
+    height: fit-content;
+    margin-right: 10px;
+    background-color: #15cda8;
+    border-radius: 2px;
+}
+
+.c-column__header {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    height: 40px;
+    padding-left: 20px;
+    background-color: #099a97;
+    border-radius: 4px 4px 0 0;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.c-column__content {
+    padding: 10px;
+}

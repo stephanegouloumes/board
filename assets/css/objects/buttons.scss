@@ -1,0 +1,77 @@
+.o-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 8px 12px;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #FFF;
+    border-radius: 2px;
+    border-bottom: 3px $gray-dark solid;
+    background-color: $gray;
+
+    &:hover {
+        background-color: lighten($gray, 2%);
+    }
+
+    &:active {
+        transform: translateY(3px);
+        border-bottom-width: 1px;
+        margin-bottom: 2px;
+    }
+
+    &.o-button--small {
+        font-size: 14px;
+        border-bottom-width: 2px;
+
+        &:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 2px;
+        }
+    }
+
+    &.o-button--large {
+        font-size: 24px;
+        border-bottom-width: 5px;
+
+        &:active {
+            transform: translateY(4px);
+            border-bottom-width: 1px;
+            margin-bottom: 5px;
+        }
+    }
+
+    &.o-button--red {
+        border-bottom-color: $red-dark;
+        background-color: $red;
+
+        &:hover {
+            background-color: lighten($red, 2%);
+        }
+    }
+
+    &.o-button--ripple {
+        position: relative;
+        overflow: hidden;
+
+        &:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: #f9b2a8;
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        &:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+    }
+}

@@ -1,0 +1,34 @@
+.c-card {
+    margin-bottom: 10px;
+    background-color: #FFF;
+    border-radius: 2px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: darken(#FFF, 3%);
+    }
+
+    &:active {
+        background-color: darken(#FFF, 5%);
+    }
+}
+
+.c-card__header {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 10px;
+    line-height: 21px;
+}
+
+.c-card__content {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 10px;
+    line-height: 21px;
+    font-size: 14px;
+    color: #777777;
+}

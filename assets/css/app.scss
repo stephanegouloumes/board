@@ -1,0 +1,18 @@
+@import 'base/reset.scss';
+@import 'base/animations.scss';
+@import 'base/colors.scss';
+
+// Objects
+@import 'objects/buttons.scss';
+@import 'objects/modal.scss';
+@import 'objects/tags.scss';
+
+// Components
+@import 'components/app.scss';
+@import 'components/navbar.scss';
+@import 'components/board.scss';
+@import 'components/column.scss';
+@import 'components/columnCreate.scss';
+@import 'components/card.scss';
+@import 'components/cardCreate.scss';
+@import 'components/cardModal.scss';
