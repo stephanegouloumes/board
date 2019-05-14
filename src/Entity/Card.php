@@ -55,6 +55,14 @@ class Card
      */
     private $updated_at;
 
+    /**
+     * @ORM\Column(type="integer")
+     * @Groups({"column", "card"})
+     * 
+     * @Assert\NotBlank
+     */
+    private $position;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -116,6 +124,18 @@ class Card
     public function setUpdatedAt(\DateTimeInterface $updated_at): self
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    public function getPosition(): ?int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
 
         return $this;
     }

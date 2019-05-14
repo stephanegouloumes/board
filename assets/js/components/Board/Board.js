@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import Axios from 'axios';
+import Axios from 'axios'
+import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 
-import Column from './Column/Column';
-import ColumnCreate from './ColumnCreate/ColumnCreate';
-import CardModal from './Column/CardModal/CardModal';
-import Toast from './Toast/Toast';
+import Column from './Column/Column'
+import ColumnCreate from './ColumnCreate/ColumnCreate'
+import CardModal from './Column/CardModal/CardModal'
+import Toast from './Toast/Toast'
 
 class Board extends Component {
     constructor(props) {
@@ -28,7 +29,7 @@ class Board extends Component {
     }
 
     addColumn = (title) => {
-        Axios.post('/board/' + this.props.board.id + '/column', { title })
+        Axios.post('/board/' + this.props.board.id + '/column', { title, position: this.state.columns.length + 1 })
         .then(response => {
             this.setState({
                 columns: [...this.state.columns, JSON.parse(response.data)],
@@ -51,6 +52,7 @@ class Board extends Component {
         })
 
         this.setState({ columns })
+
         Axios.put('/board/' + this.props.board.id + '/column/' + columnId, { title: value })
         .then(response => {
         })
@@ -60,8 +62,36 @@ class Board extends Component {
         })
     }
 
+
+    updateColumns = (columns) => {
+        Axios.put('/board/' + this.props.board.id + '/columns', columns)
+        .then(response => {
+        })
+        .catch(error => {
+            this.setState({ message: error.message })
+            console.log(error)
+        })
+    }
+
+    updateCards = (cards) => {
+        Axios.put('/board/' + this.props.board.id + '/cards', cards)
+            .then(response => {
+            })
+            .catch(error => {
+                this.setState({ message: error.message })
+                console.log(error)
+            })
+    }
+
     addCard = (columnId, title) => {
-        Axios.post('/column/' + columnId + '/card', { title })
+        let position = 1
+        this.state.columns.forEach(column => {
+            if (column.id === columnId) {
+                position = column.cards.length + 1
+            }
+        })
+
+        Axios.post('/column/' + columnId + '/card', { title, position })
         .then(response => {
             const columns = this.state.columns.filter(column => {
                 if (column.id === columnId) {
@@ -171,21 +201,101 @@ class Board extends Component {
     unselectCard = () => {
         this.setState({ cardSelected: null })
     }
+
+    onDragEnd = ({ destination, source, draggableId, type }) => {
+        if (! destination || destination.droppableId === source.droppableId && destination.index === source.index) {
+            return
+        }
+
+        if (type === 'column') {
+            this.reorderColumns(destination, source)
+        } else {
+            this.reorderCards(destination, source)
+        }
+    }
+
+    reorderColumns = (destination, source) => {
+        const columns = this.state.columns
+
+        const movedColumn = columns.splice(source.index, 1)[0]
+        columns.splice(destination.index, 0, movedColumn)
+
+        const updatedColumns = []
+        columns.forEach((column, index) => {
+            if (column.position !== index + 1) {
+                column.position = index + 1
+                updatedColumns.push({ id: column.id, position: column.position })
+            }
+        })
+
+        this.setState({ columns })
+
+        this.updateColumns(updatedColumns)
+    }
+
+    reorderCards = (destination, source) => {
+        const startColumn = this.state.columns[source.droppableId - 1]
+        const endColumn = this.state.columns[destination.droppableId - 1]
+
+        const movedCard = startColumn.cards.splice(source.index, 1)[0]
+        endColumn.cards.splice(destination.index, 0, movedCard)
+
+        const updatedCards = []
+        startColumn.cards.forEach((card, index) => {
+            if (card.position !== index + 1) {
+                card.position = index + 1
+                updatedCards.push({ id: card.id, position: card.position })
+            }
+        })
+
+        if (startColumn !== endColumn) {
+            endColumn.cards.forEach((card, index) => {
+                if (card.id === movedCard.id) {
+                    card.position = index + 1
+                    updatedCards.push({ id: card.id, position: card.position, card_list_id: endColumn.id })
+                } else if (card.position !== index + 1) {
+                    card.position = index + 1
+                    updatedCards.push({ id: card.id, position: card.position })
+                }
+            })
+        }
+
+        const columns = this.state.columns.map((column, index) => {
+            if (index === source.droppableId - 1) {
+                return startColumn
+            } else if (index === destination.droppableId - 1) {
+                return endColumn
+            }
+
+            return column
+        })
+
+        this.setState({ columns })
+
+        this.updateCards(updatedCards)
+    }
     
     render() {
         const columns = this.state.columns ? (
-            this.state.columns.map(column => {
-                return <Column key={column.id} {...column} onAddCard={(title) => this.addCard(column.id, title)} updateColumn={(type, value) => this.updateColumn(column.id, type, value)} removeColumn={() => this.removeColumn(column.id)} selectCard={(cardId) => this.selectCard(column.id, cardId)} />
+            this.state.columns.map((column, index) => {
+                return <Column key={column.id} index={index} {...column} onAddCard={(title) => this.addCard(column.id, title)} updateColumn={(type, value) => this.updateColumn(column.id, type, value)} removeColumn={() => this.removeColumn(column.id)} selectCard={(cardId) => this.selectCard(column.id, cardId)} />
             })
         ) : null
 
         return (
-            <div className="c-board">
-                {columns}
-                <ColumnCreate onAddColumn={this.addColumn} />
-                <CardModal cardSelected={this.state.cardSelected} updateCard={this.updateCard} removeCard={this.removeCard} unselectCard={this.unselectCard} />
-                <Toast message={this.state.message} />
-            </div>
+            <DragDropContext onDragEnd={this.onDragEnd}>
+                <Droppable droppableId="all-columns" direction="horizontal" type="column">
+                    {provided => (
+                        <div className="c-board" ref={provided.innerRef} {...provided.droppableProps}>
+                            {columns}
+                            <ColumnCreate onAddColumn={this.addColumn} />
+                            <CardModal cardSelected={this.state.cardSelected} updateCard={this.updateCard} removeCard={this.removeCard} unselectCard={this.unselectCard} />
+                            <Toast message={this.state.message} />
+                            {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
         )
     }
 }

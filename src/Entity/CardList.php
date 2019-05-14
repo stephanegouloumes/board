@@ -55,9 +55,18 @@ class CardList
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Card", mappedBy="card_list", cascade={"all"})
+     * @ORM\OrderBy({"position" = "ASC"})
      * @Groups({"column"})
      */
     private $cards;
+
+    /**
+     * @ORM\Column(type="integer")
+     * @Groups({"column"})
+     * 
+     * @Assert\NotBlank
+     */
+    private $position;
 
     public function getId(): ?int
     {
@@ -139,6 +148,18 @@ class CardList
                 $card->setCardList(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPosition(): ?int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
 
         return $this;
     }

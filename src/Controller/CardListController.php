@@ -40,6 +40,7 @@ class CardListController extends AbstractController
 
         $cardList = new CardList();
         $cardList->setTitle($parametersAsArray['title']);
+        $cardList->setPosition($parametersAsArray['position']);
         $cardList->setBoard($board);
 
         $errors = $validator->validate($cardList);
@@ -78,6 +79,35 @@ class CardListController extends AbstractController
         }
 
         $this->getDoctrine()->getManager()->flush();
+
+        return new JsonResponse(null, 204);
+    }
+
+    /**
+     * @Route("/board/{id}/columns", name="column_edit_batch", methods={"PUT"})
+     */
+    public function editBatch(Board $board, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $parametersAsArray = [];
+        if ($content = $request->getContent()) {
+            $parametersAsArray = json_decode($content, true);
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+
+        foreach ($parametersAsArray as $cardListData) {
+            $cardList = $this->getDoctrine()->getRepository(CardList::class)->find($cardListData['id']);
+            $cardList->setPosition($cardListData['position']);
+
+            $errors = $validator->validate($cardList);
+            if (count($errors) > 0) {
+                return new JsonResponse((string) $errors, 422);
+            }
+
+            $entityManager->persist($cardList);
+        }
+
+        $entityManager->flush();
 
         return new JsonResponse(null, 204);
     }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Card;
+use App\Entity\Board;
 use App\Entity\CardList;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,6 +27,7 @@ class CardController extends AbstractController
 
         $card = new Card();
         $card->setTitle($parametersAsArray['title']);
+        $card->setPosition($parametersAsArray['position']);
         $card->setCardList($cardList);
 
         $errors = $validator->validate($card);
@@ -64,6 +66,39 @@ class CardController extends AbstractController
         }
 
         $this->getDoctrine()->getManager()->flush();
+
+        return new JsonResponse(null, 204);
+    }
+
+    /**
+     * @Route("/board/{id}/cards", name="card_edit_batch", methods={"PUT"})
+     */
+    public function editBatch(Board $board, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $parametersAsArray = [];
+        if ($content = $request->getContent()) {
+            $parametersAsArray = json_decode($content, true);
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+
+        foreach ($parametersAsArray as $cardData) {
+            $card = $this->getDoctrine()->getRepository(Card::class)->find($cardData['id']);
+            $card->setPosition($cardData['position']);
+
+            if (isset($cardData['card_list_id'])) {
+                $card->setCardList($this->getDoctrine()->getRepository(CardList::class)->find( $cardData['card_list_id']));
+            }
+
+            $errors = $validator->validate($card);
+            if (count($errors) > 0) {
+                return new JsonResponse((string)$errors, 422);
+            }
+
+            $entityManager->persist($card);
+        }
+
+        $entityManager->flush();
 
         return new JsonResponse(null, 204);
     }

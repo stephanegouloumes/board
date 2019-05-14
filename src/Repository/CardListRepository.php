@@ -27,6 +27,7 @@ class CardListRepository extends ServiceEntityRepository
         $qb->select('p')
             ->where('p.board = :id')
             ->leftJoin('App\Entity\Card', 'c', Expr\Join::WITH, 'c.card_list = p')
+            ->orderBy('p.position')
             ->setParameter('id', $boardId);
 
         return $qb->getQuery()->getResult();
