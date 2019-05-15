@@ -10,8 +10,8 @@ class Toast extends Component {
     }
 
     componentWillReceiveProps(props) {
-        if (props.message !== '') {
-            this.setState({ message: props.message }, this.clearMessage())
+        if (props.toast.message !== '') {
+            this.setState({ message: props.toast.message }, this.clearMessage())
         }
     }
 
@@ -25,9 +25,23 @@ class Toast extends Component {
         this.setState({ message: '' })
     }
 
+    cssClasses = () => {
+        let classes = 'o-toast'
+
+        if (this.state.message) {
+            classes += ' is-shown'
+        }
+
+        if (this.props.toast.type === 'error') {
+            classes += ' is-danger'
+        }
+
+        return classes
+    }
+
     render() {
         return (
-            <div className={this.state.message ? 'o-toast is-shown' : 'o-toast'} onClick={this.hide}>
+            <div className={this.cssClasses()} onClick={this.hide}>
                 <p>{this.state.message}</p>
             </div>
         )

@@ -5,7 +5,7 @@
     right: 30px;
     width: 200px;
     padding: 20px;
-    background-color: $red;
+    background-color: $green;
     color: $text-gray-dark;
     border-radius: 2px;
     cursor: pointer;
@@ -14,6 +14,10 @@
         animation-name: moveToast;
         animation-duration: 0.5s;
         bottom: 30px;
+    }
+
+    &.is-danger {
+        background-color: $red;
     }
 
     @keyframes moveToast {

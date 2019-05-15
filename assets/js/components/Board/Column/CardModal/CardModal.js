@@ -9,7 +9,7 @@ function CardModal ({cardSelected, updateCard, removeCard, unselectCard}) {
                 <div className="o-modal__main c-card-modal">
                     <div className="c-card-modal__header">
                         <input type="text" value={card.title} onChange={(e) => updateCard('title', e.target.value)} />
-                        <span className="o-modal__close" onClick={unselectCard}>X</span>
+                        <span className="o-modal__close" onClick={unselectCard}><i className="fas fa-times"></i></span>
                     </div>
                     <div className="c-card-modal__content">
                         <div className="c-card-modal__group">

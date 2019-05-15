@@ -24,6 +24,8 @@ class Column extends Component {
     handleComponentClick = (e) => {
         if (this.node.contains(e.target)) {
             return
+        } else if (e.target.className === 'c-column__option') {
+            return
         }
 
         this.setState({ optionsShown: false })
@@ -49,8 +51,8 @@ class Column extends Component {
                             <span onClick={this.openOptions} onClick={this.showOptions} ref={node => this.node = node}><i className="fas fa-ellipsis-h"></i></span>
                             <div className={this.state.optionsShown ? 'c-column__options' : 'c-column__options is-hidden'}>
                                 <ul>
-                                    <li>Archive</li>
-                                    <li onClick={this.props.removeColumn}>Delete</li>
+                                    <li className="c-column__option">Archive</li>
+                                    <li className="c-column__option" onClick={this.props.removeColumn}>Delete</li>
                                 </ul>
                             </div>
                         </div>

@@ -11,9 +11,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\CardListRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class CardList
 {
+    use Timestamps;
+    
     public function __construct()
     {
         $this->created_at = new \Datetime();
@@ -42,16 +45,6 @@ class CardList
      * @ORM\JoinColumn(nullable=false)
      */
     private $board;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $created_at;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $updated_at;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Card", mappedBy="card_list", cascade={"all"})
@@ -93,30 +86,6 @@ class CardList
     public function setBoard(?Board $board): self
     {
         $this->board = $board;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $created_at): self
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(\DateTimeInterface $updated_at): self
-    {
-        $this->updated_at = $updated_at;
 
         return $this;
     }

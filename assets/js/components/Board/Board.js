@@ -5,13 +5,12 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import Column from './Column/Column'
 import ColumnCreate from './ColumnCreate/ColumnCreate'
 import CardModal from './Column/CardModal/CardModal'
-import Toast from './Toast/Toast'
 
 class Board extends Component {
     constructor(props) {
         super(props)
 
-        this.state = { columns: [], message: '' }
+        this.state = { columns: [] }
     }
 
     componentDidMount() {
@@ -33,11 +32,12 @@ class Board extends Component {
         .then(response => {
             this.setState({
                 columns: [...this.state.columns, JSON.parse(response.data)],
-                message: 'Column created'
             })
+
+            this.props.showToast('Column created')
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
@@ -53,32 +53,32 @@ class Board extends Component {
 
         this.setState({ columns })
 
-        Axios.put('/board/' + this.props.board.id + '/column/' + columnId, { title: value })
+        Axios.patch('/board/' + this.props.board.id + '/column/' + columnId, { title: value })
         .then(response => {
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
 
 
     updateColumns = (columns) => {
-        Axios.put('/board/' + this.props.board.id + '/columns', columns)
+        Axios.patch('/board/' + this.props.board.id + '/columns', columns)
         .then(response => {
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
 
     updateCards = (cards) => {
-        Axios.put('/board/' + this.props.board.id + '/cards', cards)
+        Axios.patch('/board/' + this.props.board.id + '/cards', cards)
             .then(response => {
             })
             .catch(error => {
-                this.setState({ message: error.message })
+                this.props.showToast(error.message)
                 console.log(error)
             })
     }
@@ -101,10 +101,13 @@ class Board extends Component {
                 return column
             })
 
-            this.setState({ columns, message: 'Card created' })
+            this.setState({ columns })
+
+            this.props.recordActivity('card.created')
+            this.props.showToast('Card created')
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
@@ -130,24 +133,27 @@ class Board extends Component {
 
         this.setState({ columns })
 
-        Axios.put('/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id, this.state.cardSelected)
+        Axios.patch('/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id, this.state.cardSelected)
         .then(response => {
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
 
     removeColumn = (columnId) => {
+        console.log('ok')
         Axios.delete('/column/' + columnId)
         .then(response => {
             const columns = this.state.columns.filter(column => column.id !== columnId)
 
-            this.setState({ columns, message: 'Column removed' })
+            this.setState({ columns })
+
+            this.props.showToast('Column removed', 'error')
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
@@ -169,12 +175,14 @@ class Board extends Component {
                 return column
             })
 
-            this.setState({ columns, message: 'Card removed' })
+            this.setState({ columns })
+
+            this.props.showToast('Card removed', 'error')
 
             this.unselectCard()
         })
         .catch(error => {
-            this.setState({ message: error.message })
+            this.props.showToast(error.message)
             console.log(error)
         })
     }
@@ -290,7 +298,6 @@ class Board extends Component {
                             {columns}
                             <ColumnCreate onAddColumn={this.addColumn} />
                             <CardModal cardSelected={this.state.cardSelected} updateCard={this.updateCard} removeCard={this.removeCard} unselectCard={this.unselectCard} />
-                            <Toast message={this.state.message} />
                             {provided.placeholder}
                         </div>
                     )}

@@ -25,7 +25,7 @@ class CardListController extends AbstractController
 
         $dataJson = $serializer->serialize($data, 'json', ['groups' => ['column']]);
 
-        return new JsonResponse($dataJson);
+        return new JsonResponse($dataJson, JsonResponse::HTTP_OK);
     }
 
     /**
@@ -45,7 +45,7 @@ class CardListController extends AbstractController
 
         $errors = $validator->validate($cardList);
         if (count($errors) > 0) {
-            return new JsonResponse((string)$errors, 422);
+            return new JsonResponse((string)$errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -55,11 +55,11 @@ class CardListController extends AbstractController
         $dataJson = $serializer->serialize($cardList, 'json', ['groups' => ['column']]);
         // $dataJson = $serializer->serialize($cardList, 'json', ['attributes' => ['id', 'title', 'description']]);
 
-        return new JsonResponse($dataJson, 201);
+        return new JsonResponse($dataJson, JsonResponse::HTTP_CREATED);
     }
 
     /**
-     * @Route("/board/{board_id}/column/{column_id}", name="column_edit", methods={"PUT"})
+     * @Route("/board/{board_id}/column/{column_id}", name="column_edit", methods={"PATCH"})
      * 
      * @ParamConverter("board", options={"mapping": {"board_id": "id"}})
      * @ParamConverter("cardList", options={"mapping": {"column_id": "id"}})
@@ -75,16 +75,16 @@ class CardListController extends AbstractController
 
         $errors = $validator->validate($cardList);
         if (count($errors) > 0) {
-            return new JsonResponse((string) $errors, 422);
+            return new JsonResponse((string) $errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->getDoctrine()->getManager()->flush();
 
-        return new JsonResponse(null, 204);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     /**
-     * @Route("/board/{id}/columns", name="column_edit_batch", methods={"PUT"})
+     * @Route("/board/{id}/columns", name="column_edit_batch", methods={"PATCH"})
      */
     public function editBatch(Board $board, Request $request, ValidatorInterface $validator): JsonResponse
     {
@@ -101,7 +101,7 @@ class CardListController extends AbstractController
 
             $errors = $validator->validate($cardList);
             if (count($errors) > 0) {
-                return new JsonResponse((string) $errors, 422);
+                return new JsonResponse((string) $errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
             }
 
             $entityManager->persist($cardList);
@@ -109,7 +109,7 @@ class CardListController extends AbstractController
 
         $entityManager->flush();
 
-        return new JsonResponse(null, 204);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     /**
@@ -121,6 +121,6 @@ class CardListController extends AbstractController
         $entityManager->remove($cardList);
         $entityManager->flush();
 
-        return new JsonResponse(null, 204);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

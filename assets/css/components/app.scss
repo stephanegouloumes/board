@@ -18,3 +18,15 @@ body {
 div, label, input, textarea {
     font-family: Roboto, Helvetica, sans-serif;
 }
+
+.c-app {
+    height: 100%;
+    
+    main {
+        position: relative;
+        height: 100%;
+        // display: flex;
+        // flex-flow: row wrap;
+        // justify-content: space-between;
+    }
+}

@@ -32,7 +32,7 @@ class CardController extends AbstractController
 
         $errors = $validator->validate($card);
         if (count($errors) > 0) {
-            return new JsonResponse((string)$errors, 422);
+            return new JsonResponse((string)$errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -41,11 +41,11 @@ class CardController extends AbstractController
 
         $dataJson = $serializer->serialize($card, 'json', ['groups' => ['card']]);
 
-        return new JsonResponse($dataJson, 201);
+        return new JsonResponse($dataJson, JsonResponse::HTTP_CREATED);
     }
 
     /**
-     * @Route("/column/{column_id}/card/{card_id}", name="card_edit", methods={"PUT"})
+     * @Route("/column/{column_id}/card/{card_id}", name="card_edit", methods={"PATCH"})
      * 
      * @ParamConverter("cardList", options={"mapping": {"column_id": "id"}})
      * @ParamConverter("card", options={"mapping": {"card_id": "id"}})
@@ -62,16 +62,16 @@ class CardController extends AbstractController
 
         $errors = $validator->validate($card);
         if (count($errors) > 0) {
-            return new JsonResponse((string)$errors, 422);
+            return new JsonResponse((string)$errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->getDoctrine()->getManager()->flush();
 
-        return new JsonResponse(null, 204);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     /**
-     * @Route("/board/{id}/cards", name="card_edit_batch", methods={"PUT"})
+     * @Route("/board/{id}/cards", name="card_edit_batch", methods={"PATCH"})
      */
     public function editBatch(Board $board, Request $request, ValidatorInterface $validator): JsonResponse
     {
@@ -92,7 +92,7 @@ class CardController extends AbstractController
 
             $errors = $validator->validate($card);
             if (count($errors) > 0) {
-                return new JsonResponse((string)$errors, 422);
+                return new JsonResponse((string)$errors, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
             }
 
             $entityManager->persist($card);
@@ -100,7 +100,7 @@ class CardController extends AbstractController
 
         $entityManager->flush();
 
-        return new JsonResponse(null, 204);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     /**
@@ -115,6 +115,6 @@ class CardController extends AbstractController
         $entityManager->remove($card);
         $entityManager->flush();
 
-        return new JsonResponse(null, 204);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
