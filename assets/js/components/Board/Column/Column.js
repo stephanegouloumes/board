@@ -56,17 +56,15 @@ class Column extends Component {
                                 </ul>
                             </div>
                         </div>
-                        <div className="c-column__content">
-                            <Droppable droppableId={this.props.id} type="card">
-                                {provided => (
-                                    <div ref={provided.innerRef} {...provided.droppableProps}>
-                                        {cards}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                            <CardCreate onAddCard={this.props.onAddCard} />
-                        </div>
+                        <Droppable droppableId={this.props.id} type="card">
+                            {provided => (
+                                <div className="c-column__content" ref={provided.innerRef} {...provided.droppableProps}>
+                                    {cards}
+                                    {provided.placeholder}
+                                    <CardCreate onAddCard={this.props.onAddCard} />
+                                </div>
+                            )}
+                        </Droppable>
                     </div>
                 )}
             </Draggable>

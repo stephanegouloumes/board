@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Axios from 'axios'
 
 import Navbar from '../Navbar/Navbar'
 import Sidebar from '../Sidebar/Sidebar'
@@ -18,11 +19,36 @@ class App extends Component {
             toast: { message: '', type: 'success' }
         }
     }
-    
-    recordActivity = type => {
-        const activity = { id: this.state.activity.length + 1, user: this.state.user, content: type }
 
-        this.setState({ activity: [...this.state.activity, activity] })
+    componentDidMount() {
+        this.getActivity()
+    }
+
+    getActivity = () => {
+        Axios.get('/board/' + this.props.board.id + '/activity')
+        .then(response => {
+            this.setState({ activity: JSON.parse(response.data) })
+        })
+        .catch(error => {
+            console.log(error)
+        })
+    }
+    
+    recordActivity = (entity_type, entity_id, action) => {
+        const data = {
+            entity_type,
+            entity_id,
+            action,
+            user_id: this.props.user,
+        }
+
+        Axios.post('/board/' + this.props.board.id + '/activity', data)
+        .then(response => {
+            this.setState({ activity: [JSON.parse(response.data), ...this.state.activity] })
+        })
+        .catch(error => {
+            console.log(error)
+        })
     }
 
     showToast = (message, type = 'success') => {

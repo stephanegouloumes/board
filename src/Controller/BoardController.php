@@ -3,14 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Board;
-use App\Entity\CardList;
 use App\Form\BoardType;
+use App\Entity\CardList;
 use App\Repository\BoardRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @Route("/board")
@@ -37,6 +37,7 @@ class BoardController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $board->setOwner($this->getUser());
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($board);
             $entityManager->flush();
@@ -53,22 +54,14 @@ class BoardController extends AbstractController
     /**
      * @Route("/{id}", name="board_show", methods={"GET"})
      */
-    public function show(Board $board): Response
+    public function show(Board $board, SerializerInterface $serializer): Response
     {
-        // $cardList = new CardList();
-        // $cardList->setTitle('Hello');
-        // $cardList->setBoard($board);
+        $this->denyAccessUnlessGranted('view', $board);
 
-        // $entityManager = $this->getDoctrine()->getManager();
-        // $entityManager->persist($cardList);
-        // $entityManager->flush();
-
-        // $test = $this->getDoctrine()
-        //     ->getRepository(CardList::class)
-        //     ->findByIdJoinedToBoard($board->id);
+        $boardJson = $serializer->serialize($board, 'json', ['groups' => ['board']]);
 
         return $this->render('board/show.html.twig', [
-            'board' => $board,
+            'board' => $boardJson,
         ]);
     }
 
@@ -77,6 +70,8 @@ class BoardController extends AbstractController
      */
     public function edit(Request $request, Board $board): Response
     {
+        $this->denyAccessUnlessGranted('edit', $board);
+
         $form = $this->createForm(BoardType::class, $board);
         $form->handleRequest($request);
 
@@ -99,6 +94,8 @@ class BoardController extends AbstractController
      */
     public function delete(Request $request, Board $board): Response
     {
+        $this->denyAccessUnlessGranted('edit', $board);
+        
         if ($this->isCsrfTokenValid('delete'.$board->getId(), $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($board);

@@ -11,17 +11,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use App\Repository\CardListRepository;
 
 class CardListController extends AbstractController
 {
     /**
      * @Route("/board/{id}/column", name="column_index", methods={"GET"})
      */
-    public function index(Board $board, SerializerInterface $serializer): JsonResponse
+    public function index(Board $board, CardListRepository $cardListRepository, SerializerInterface $serializer): JsonResponse
     {
-        $data = $this->getDoctrine()
-            ->getRepository(CardList::class)
-            ->findByBoard($board->id);
+        $this->denyAccessUnlessGranted('view', $board);
+
+        $data = $cardListRepository->findByBoard($board);
 
         $dataJson = $serializer->serialize($data, 'json', ['groups' => ['column']]);
 
@@ -33,15 +34,17 @@ class CardListController extends AbstractController
      */
     public function new(Board $board, Request $request, ValidatorInterface $validator, SerializerInterface $serializer): JsonResponse
     {
+        $this->denyAccessUnlessGranted('edit', $board);
+
         $parametersAsArray = [];
         if ($content = $request->getContent()) {
             $parametersAsArray = json_decode($content, true);
         }
 
         $cardList = new CardList();
-        $cardList->setTitle($parametersAsArray['title']);
-        $cardList->setPosition($parametersAsArray['position']);
-        $cardList->setBoard($board);
+        $cardList->setTitle($parametersAsArray['title'])
+            ->setPosition($parametersAsArray['position'])
+            ->setBoard($board);
 
         $errors = $validator->validate($cardList);
         if (count($errors) > 0) {
@@ -66,6 +69,8 @@ class CardListController extends AbstractController
      */
     public function edit(Board $board, CardList $cardList, Request $request, ValidatorInterface $validator): JsonResponse
     {
+        $this->denyAccessUnlessGranted('edit', $board);
+
         $parametersAsArray = [];
         if ($content = $request->getContent()) {
             $parametersAsArray = json_decode($content, true);
@@ -86,8 +91,10 @@ class CardListController extends AbstractController
     /**
      * @Route("/board/{id}/columns", name="column_edit_batch", methods={"PATCH"})
      */
-    public function editBatch(Board $board, Request $request, ValidatorInterface $validator): JsonResponse
+    public function editBatch(Board $board, CardListRepository $cardListRepository, Request $request, ValidatorInterface $validator): JsonResponse
     {
+        $this->denyAccessUnlessGranted('edit', $board);
+
         $parametersAsArray = [];
         if ($content = $request->getContent()) {
             $parametersAsArray = json_decode($content, true);
@@ -96,7 +103,7 @@ class CardListController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         foreach ($parametersAsArray as $cardListData) {
-            $cardList = $this->getDoctrine()->getRepository(CardList::class)->find($cardListData['id']);
+            $cardList = $cardListRepository->find($cardListData['id']);
             $cardList->setPosition($cardListData['position']);
 
             $errors = $validator->validate($cardList);
@@ -117,6 +124,8 @@ class CardListController extends AbstractController
      */
     public function delete(CardList $cardList): JsonResponse
     {
+        $this->denyAccessUnlessGranted('edit', $board);
+        
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->remove($cardList);
         $entityManager->flush();

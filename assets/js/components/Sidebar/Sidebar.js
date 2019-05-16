@@ -29,7 +29,8 @@ class Sidebar extends Component {
                             <div className="c-sidebar__row-content">
                                 <ul>
                                     {this.props.activity.map(activity => {
-                                        return <li key={activity.id}><b>{activity.user}</b> {activity.content}</li>
+                                        activity.user = activity.user ? activity.user : { username: 'Guest' }
+                                        return <li key={activity.id}><b>{activity.user.username}</b> {activity.action} a {activity.entityType}</li>
                                     })}
                                 </ul>
                             </div>

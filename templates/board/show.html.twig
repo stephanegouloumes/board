@@ -3,6 +3,5 @@
 {% block title %}Board{% endblock %}
 
 {% block body %}
-    <div id="js-board" data-entry-id={{ board|json_encode }}></div>
+    <div id="js-board" data-entry-board={{ (board|e('html_attr')) }} data-entry-user={{ (app.user.id|json_encode|e('html_attr')) }}></div>
 {% endblock %}
-

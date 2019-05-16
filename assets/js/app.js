@@ -6,8 +6,12 @@ import App from './components/App/App.js'
 
 require('../css/app.scss');
 
-if (document.getElementById('js-board') !== null) {
-    const board = JSON.parse(document.getElementById('js-board').dataset.entryId)
+const boardElement = document.getElementById('js-board')
 
-    ReactDOM.render(<App board={board} />, document.getElementById('js-board'))
+if (boardElement) {
+    try {
+        ReactDOM.render(<App board={JSON.parse(boardElement.dataset.entryBoard)} user={JSON.parse(boardElement.dataset.entryUser)} />, boardElement)
+    } catch (error) {
+        console.log(error)
+    }
 }

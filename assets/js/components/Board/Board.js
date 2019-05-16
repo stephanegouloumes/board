@@ -35,6 +35,36 @@ class Board extends Component {
             })
 
             this.props.showToast('Column created')
+            this.props.recordActivity('Column', JSON.parse(response.data).id, 'created')
+        })
+        .catch(error => {
+            this.props.showToast(error.message)
+            console.log(error)
+        })
+    }
+
+    addCard = (columnId, title) => {
+        let position = 1
+        this.state.columns.forEach(column => {
+            if (column.id === columnId) {
+                position = column.cards.length + 1
+            }
+        })
+
+        Axios.post('/board/' + this.props.board.id + '/column/' + columnId + '/card', { title, position })
+        .then(response => {
+            const columns = this.state.columns.filter(column => {
+                if (column.id === columnId) {
+                    column.cards.push(JSON.parse(response.data))
+                }
+
+                return column
+            })
+
+            this.setState({ columns })
+
+            this.props.recordActivity('Card', JSON.parse(response.data).id, 'created')
+            this.props.showToast('Card created')
         })
         .catch(error => {
             this.props.showToast(error.message)
@@ -52,64 +82,15 @@ class Board extends Component {
         })
 
         this.setState({ columns })
+        this.props.recordActivity('Column', columnId, 'updated')
 
         Axios.patch('/board/' + this.props.board.id + '/column/' + columnId, { title: value })
-        .then(response => {
-        })
-        .catch(error => {
-            this.props.showToast(error.message)
-            console.log(error)
-        })
-    }
-
-
-    updateColumns = (columns) => {
-        Axios.patch('/board/' + this.props.board.id + '/columns', columns)
-        .then(response => {
-        })
-        .catch(error => {
-            this.props.showToast(error.message)
-            console.log(error)
-        })
-    }
-
-    updateCards = (cards) => {
-        Axios.patch('/board/' + this.props.board.id + '/cards', cards)
             .then(response => {
             })
             .catch(error => {
                 this.props.showToast(error.message)
                 console.log(error)
             })
-    }
-
-    addCard = (columnId, title) => {
-        let position = 1
-        this.state.columns.forEach(column => {
-            if (column.id === columnId) {
-                position = column.cards.length + 1
-            }
-        })
-
-        Axios.post('/column/' + columnId + '/card', { title, position })
-        .then(response => {
-            const columns = this.state.columns.filter(column => {
-                if (column.id === columnId) {
-                    column.cards.push(JSON.parse(response.data))
-                }
-
-                return column
-            })
-
-            this.setState({ columns })
-
-            this.props.recordActivity('card.created')
-            this.props.showToast('Card created')
-        })
-        .catch(error => {
-            this.props.showToast(error.message)
-            console.log(error)
-        })
     }
 
     updateCard = (type, value) => {
@@ -133,7 +114,9 @@ class Board extends Component {
 
         this.setState({ columns })
 
-        Axios.patch('/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id, this.state.cardSelected)
+        this.props.recordActivity('Card', this.state.cardSelected.id, 'updated')
+
+        Axios.patch('/board/' + this.props.board.id + '/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id, this.state.cardSelected)
         .then(response => {
         })
         .catch(error => {
@@ -142,14 +125,35 @@ class Board extends Component {
         })
     }
 
+    updateColumns = (columns) => {
+        Axios.patch('/board/' + this.props.board.id + '/columns', columns)
+            .then(response => {
+            })
+            .catch(error => {
+                this.props.showToast(error.message)
+                console.log(error)
+            })
+    }
+
+    updateCards = (cards) => {
+        Axios.patch('/board/' + this.props.board.id + '/cards', cards)
+            .then(response => {
+            })
+            .catch(error => {
+                this.props.showToast(error.message)
+                console.log(error)
+            })
+    }
+
     removeColumn = (columnId) => {
         console.log('ok')
-        Axios.delete('/column/' + columnId)
+        Axios.delete('/board/' + this.props.board.id + '/column/' + columnId)
         .then(response => {
             const columns = this.state.columns.filter(column => column.id !== columnId)
 
             this.setState({ columns })
 
+            this.props.recordActivity('Column', 0, 'removed')
             this.props.showToast('Column removed', 'error')
         })
         .catch(error => {
@@ -159,7 +163,7 @@ class Board extends Component {
     }
 
     removeCard = () => {
-        Axios.delete('/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id)
+        Axios.delete('/board/' + this.props.board.id + '/column/' + this.state.columnSelected.id + '/card/' + this.state.cardSelected.id)
         .then(response => {
             const columns = this.state.columns.map(column => {
                 if (column.id === this.state.columnSelected.id) {
@@ -177,6 +181,7 @@ class Board extends Component {
 
             this.setState({ columns })
 
+            this.props.recordActivity('Card', 0, 'removed')
             this.props.showToast('Card removed', 'error')
 
             this.unselectCard()
@@ -242,8 +247,8 @@ class Board extends Component {
     }
 
     reorderCards = (destination, source) => {
-        const startColumn = this.state.columns[source.droppableId - 1]
-        const endColumn = this.state.columns[destination.droppableId - 1]
+        const startColumn = this.state.columns.filter(column => column.id === source.droppableId)[0]
+        const endColumn = this.state.columns.filter(column => column.id === destination.droppableId)[0]
 
         const movedCard = startColumn.cards.splice(source.index, 1)[0]
         endColumn.cards.splice(destination.index, 0, movedCard)
@@ -296,9 +301,9 @@ class Board extends Component {
                     {provided => (
                         <div className="c-board" ref={provided.innerRef} {...provided.droppableProps}>
                             {columns}
+                            {provided.placeholder}
                             <ColumnCreate onAddColumn={this.addColumn} />
                             <CardModal cardSelected={this.state.cardSelected} updateCard={this.updateCard} removeCard={this.removeCard} unselectCard={this.unselectCard} />
-                            {provided.placeholder}
                         </div>
                     )}
                 </Droppable>
